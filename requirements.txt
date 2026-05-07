@@ -1,0 +1,100 @@
+# Slot Math Engine
+
+A production-style Python slot math engine for rapid game math iteration and simulation.
+
+## Objectives
+
+- Compute RTP from simulated outcomes
+- Analyse volatility and variance
+- Estimate hit frequency
+- Simulate hundreds of thousands to millions of spins
+- Tune game behaviour via YAML parameters: reel strips, paytable, paylines, scatter pays, features, bet setup, and max-win cap
+
+## Project layout
+
+```text
+slot-math-engine/
+├── config/
+│   └── game_config.yaml
+├── src/
+│   ├── reels.py
+│   ├── paylines.py
+│   ├── paytable.py
+│   ├── engine.py
+│   ├── simulator.py
+│   └── analytics.py
+├── notebooks/
+│   └── analysis.ipynb
+├── results/
+│   └── reports/
+└── README.md
+```
+
+## Install
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install pyyaml
+```
+
+`statistics.NormalDist` is from the Python standard library. Python 3.10+ is recommended.
+
+## Run a simulation
+
+From the project root:
+
+```bash
+python -m src.simulator --config config/game_config.yaml --spins 1000000 --seed 123456
+```
+
+Write a report:
+
+```bash
+python -m src.simulator \
+  --config config/game_config.yaml \
+  --spins 1000000 \
+  --seed 123456 \
+  --output results/reports/simulation_report.json
+```
+
+## Tuning workflow
+
+Edit `config/game_config.yaml` and rerun the simulator.
+
+Common tuning levers:
+
+| Lever | Typical effect |
+|---|---|
+| Increase high-symbol frequency | Higher hit rate, usually lower volatility |
+| Increase premium symbol pays | Higher RTP and higher volatility |
+| Reduce premium symbol frequency | Lower hit rate and higher volatility |
+| Add/reduce wilds | Strong effect on hit rate and RTP |
+| Increase scatter frequency | More feature triggers and usually higher RTP |
+| Add max-win cap | Limits tail risk and lowers simulated RTP if frequently reached |
+
+## Report metrics
+
+The simulator reports:
+
+- `rtp`: total win divided by total bet
+- `expected_loss_rate`: `1 - RTP`
+- `hit_frequency`: proportion of spins with win > 0
+- `variance` and `standard_deviation`: volatility indicators based on win-per-spin distribution
+- `coefficient_of_variation`: standard deviation divided by mean win
+- `p50_win`, `p90_win`, `p95_win`, `p99_win`: win distribution percentiles
+- `feature_trigger_frequency`: proportion of spins awarding free spins or equivalent feature event
+- `rtp_confidence_95_low/high`: normal-approximation confidence interval for simulated RTP
+
+## Notes for production hardening
+
+This project is a math-engine skeleton. For regulated real-money deployment, keep these concerns outside this package:
+
+- Wallet/accounting integration
+- Certified RNG service integration
+- Audit logs and immutable round records
+- Jurisdiction-specific reporting
+- Fraud/risk systems
+- Player/session management
+
+The math package should stay deterministic, testable, config-driven, and side-effect-light.
